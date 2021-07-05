@@ -2,16 +2,17 @@
 #define FIRMOFFER_H
 
 #include <memory>
+#include <vector>
 #include <string>
 #include "Order.h"
 
 class FirmOffer
 {
 public:
-    FirmOffer(const std::string &path, std::shared_ptr<Order> mpOrder);
+    FirmOffer(const std::string &path, std::shared_ptr<Order> pOrder);
     void ConstructLocationData();
 private:
-    void OnOrder();
+    void OnOrder(const std::vector<std::string> &data);
     std::string inputDataPath;
     std::shared_ptr<Order> mpOrder;
 };

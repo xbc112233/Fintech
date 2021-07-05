@@ -65,13 +65,12 @@ void ThreadPool::ConsumeTask()
     //pop内部线程安全,所以不需要加锁
     while (1)
     {
-         cout << "DEBUG ConsumeTask wait mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
         std::unique_lock<std::mutex> ulock(mMutex);
-        cout << "DEBUG ConsumeTask get mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
         if (mTaskBuffer.size() > 0) {
             TaskPtr pTask = mTaskBuffer.front();
             mTaskBuffer.pop_front();
             pTask->Run();
+            cout << "DEBUG ConsumeTask get mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
             pTask.reset();
         }
         ulock.unlock();

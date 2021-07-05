@@ -3,16 +3,14 @@
 #include <vector>
 #include <string>
 #include <unistd.h>
+#include "FirmOffer.h"
 using namespace std;
 
 int main()
 {
-    vector<string> data = {"1","2","3"};
-    Order order(20); 
-    int i = 0;
-    while (i < 100000) {
-        order.OnOrder(data);
-        usleep(20000);
-    }   
+    std::shared_ptr<Order> pOrder;
+    pOrder.reset(new Order(20));   
+    FirmOffer fo("../data/ORDER_SSE", pOrder);
+    fo.ConstructLocationData();
     return 0;
 }

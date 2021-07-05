@@ -1,3 +1,6 @@
+#ifndef ORDER_H
+#define ORDER_H
+
 #include "ThreadPool.h"
 #include <vector>
 #include <string>
@@ -12,3 +15,5 @@ private:
     int OnOrderWorker(const std::vector<std::string> &data);
     ThreadPoolPtr mpThreadPool;
 };
+
+#endif
