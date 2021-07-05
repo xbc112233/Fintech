@@ -1,5 +1,5 @@
-#ifndef FIRMOFFER_H
-#define FIRMOFFER_H
+#ifndef FIRM_OFFER_H
+#define FIRM_OFFER_H
 
 #include <memory>
 #include <vector>

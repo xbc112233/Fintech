@@ -1,4 +1,4 @@
-#include "ThreadPool.h"
+#include "thread_pool.h"
 #include <iostream>
 #include <unistd.h>
 using namespace std;
@@ -37,7 +37,7 @@ ThreadPool::ThreadPool(int nThreads)
     {
         std::thread *pThread = new std::thread(&ThreadPool::ConsumeTask, this);
         mThreads.push_back(pThread);
-        cout << "ThreadPool init pThread: " << i <<endl;
+        //cout << "ThreadPool init pThread: " << i <<endl;
     }
 }
 
@@ -55,7 +55,7 @@ int ThreadPool::Submit(TaskPtr pTask)
 {
     std::unique_lock<std::mutex> ulock(mMutex);
     mTaskBuffer.push_back(pTask);
-    cout << "DEBUG Submit mTaskBuffer size: " << mTaskBuffer.size()<<endl;
+    //cout << "DEBUG Submit mTaskBuffer size: " << mTaskBuffer.size()<<endl;
     ulock.unlock();
     return 0;
 }
@@ -70,7 +70,7 @@ void ThreadPool::ConsumeTask()
             TaskPtr pTask = mTaskBuffer.front();
             mTaskBuffer.pop_front();
             pTask->Run();
-            cout << "DEBUG ConsumeTask get mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
+            //cout << "DEBUG ConsumeTask get mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
             pTask.reset();
         }
         ulock.unlock();
