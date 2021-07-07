@@ -62,18 +62,20 @@ int ThreadPool::Submit(TaskPtr pTask)
 
 void ThreadPool::ConsumeTask()
 {
-    //pop内部线程安全,所以不需要加锁
     while (1)
     {
         std::unique_lock<std::mutex> ulock(mMutex);
         if (mTaskBuffer.size() > 0) {
             TaskPtr pTask = mTaskBuffer.front();
             mTaskBuffer.pop_front();
+            ulock.unlock();
             pTask->Run();
             //cout << "DEBUG ConsumeTask get mMutex mTaskBuffer size: " << mTaskBuffer.size() << endl;
             pTask.reset();
         }
-        ulock.unlock();
+        else {
+            ulock.unlock();
+        }
         usleep(20000);
     }
 }
