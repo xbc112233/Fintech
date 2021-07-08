@@ -1,5 +1,10 @@
 1.编译命令
 g++ -g thread_pool.cpp main.cpp Order.cpp Trader.cpp firm_offer.cpp  common_util.cpp -std=c++11 -lpthread -Werror  -o t
 
-2.执行,加一个数字参数，表示一次性输出N个连续data
+2.数据集准备
+假设当前可执行文件在/tmp/code/，那么ORDER_SSE和TRADE_SSE数据集放到/tmp/data/目录
+
+3.执行,加一个数字参数，表示一次性输出N个连续data
 ./t 20
+
+4.ORDER_SSE的本地固化数据为当前可执行文件目录下的ORDER_SSE.loc文件，TRADE_SSE的固化文件为TRADE_SSE.loc
