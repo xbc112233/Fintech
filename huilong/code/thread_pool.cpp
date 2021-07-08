@@ -37,7 +37,6 @@ ThreadPool::ThreadPool(int nThreads)
     {
         std::thread *pThread = new std::thread(&ThreadPool::ConsumeTask, this);
         mThreads.push_back(pThread);
-        //cout << "ThreadPool init pThread: " << i <<endl;
     }
 }
 

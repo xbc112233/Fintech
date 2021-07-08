@@ -1,30 +1,28 @@
 #include "common_util.h"
-#include "Order.h"
+#include "Trader.h"
 #include <iostream>
 #include <algorithm>
 #include <mutex>
 using namespace std;
 
-
-Order::Order(int maxThreadNum, const string &locationPath, int minSize)
-        :mDataLocationPath(locationPath)
+Trader::Trader(int maxThreadNum, const string &locationPath, int minSize)
+        :mDataLocationPath(locationPath), mSortedOutputMinSize(minSize)
 {
     mpThreadPool.reset(new ThreadPool(maxThreadNum));
-    //onSortedOrder 一次性展示的窗口大小，可以通过配置来扩展，此处hard-code
+    //onSortedTrader 一次性展示的窗口大小，可以通过配置来扩展，此处hard-code
     mpSortThreadPool.reset(new ThreadPool(maxThreadNum));
-    mSortedOutputMinSize = minSize;
 }
 
-Order::~Order()
+Trader::~Trader()
 {
     mSeqInfoMap.clear();   
 }
 
-void Order::OnOrder(const std::vector<std::string> &data)
+void Trader::OnTrader(const std::vector<std::string> &data)
 {
     ThreadPool::TaskPtr pTask(std::make_shared<ThreadPool::Task>(
             std::bind(
-                &Order::OnOrderWorker,
+                &Trader::OnTraderWorker,
                 this, data)));
     mpThreadPool->Submit(pTask);
 
@@ -35,17 +33,17 @@ void Order::OnOrder(const std::vector<std::string> &data)
         mSeqInfoMap[channel]->start = 1;
         mSeqInfoMap[channel]->channel = channel;
     }
-    int seqId = stoi(data[data.size() - 1]);
+    int seqId = stoi(data[2]);
     ThreadPool::TaskPtr pSortTask(std::make_shared<ThreadPool::Task>(
             std::bind(
-                &Order::OnSortedOrderWorker,
+                &Trader::OnSortedTraderWorker,
                 this, mSeqInfoMap[channel], seqId, data)));
 
     mpSortThreadPool->Submit(pSortTask);
     lock.unlock();   
 }
 
-int Order::OnOrderWorker(const std::vector<std::string> &data)
+int Trader::OnTraderWorker(const std::vector<std::string> &data)
 {
     unique_lock<mutex> lock(mMutex);
     const string &timeStr = data[0];
@@ -61,16 +59,15 @@ int Order::OnOrderWorker(const std::vector<std::string> &data)
         dataStr += ",";
         dataStr += data[i];
     }
-    //mDataLocationPath = "ORDER_SSE.loc";
-//    cout << "DEBUG mDataLocationPath: " << mDataLocationPath << " dataStr: " << dataStr << " rowNum: " << rowNum <<endl;
+    //cout << "DEBUG mDataLocationPath: " << mDataLocationPath << " dataStr: " << dataStr << " rowNum: " << rowNum <<endl;
     CommonUtil::InsertByLineNumber(mDataLocationPath, dataStr, rowNum); 
     lock.unlock();
     return SUCC;
 }
 
-void Order::OutputList(std::list<std::vector<std::string>> &buffDataList)
+void Trader::OutputList(std::list<std::vector<std::string>> &buffDataList)
 {
-    cout << "================output Order Sort begin!==================" << endl;
+    cout << "================output trader sort begin!==================" << endl;
     for (auto it = buffDataList.begin(); it != buffDataList.end(); ++it) {
         string tmp = "";
         for (int i = 0; i < it->size(); ++i) {
@@ -79,11 +76,11 @@ void Order::OutputList(std::list<std::vector<std::string>> &buffDataList)
         }
         cout << tmp << endl;
     }
-    cout << "===========output Order Sort end!!!!!=================" <<endl;
+    cout << "===========output trader sort end!!!!!=================" <<endl;
     cout << endl;
 }
 
-int Order::OnSortedOrderWorker(std::shared_ptr<SeqInfo> pSeqInfo, int seqId, const vector<string> &data)
+int Trader::OnSortedTraderWorker(std::shared_ptr<SeqInfo> pSeqInfo, int seqId, const vector<string> &data)
 {
     unique_lock<mutex> lock(pSeqInfo->mSortMutex);
     auto &seqInfo = *pSeqInfo;
@@ -149,6 +146,6 @@ int Order::OnSortedOrderWorker(std::shared_ptr<SeqInfo> pSeqInfo, int seqId, con
             gap.insert(i);
         }
     }
-    //lock.unlock();
+    lock.unlock();
     return SUCC;    
 }

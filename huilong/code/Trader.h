@@ -1,5 +1,5 @@
-#ifndef ORDER_H
-#define ORDER_H
+#ifndef TRADER_H
+#define TRADER_H
 
 #include "thread_pool.h"
 #include <vector>
@@ -9,13 +9,13 @@
 #include <unordered_map>
 #include <set>
 
-class Order
+class Trader
 {
 public:
-    Order(int maxThreadNum, const std::string &locationPath, int minSize);
-    ~Order();
-    void OnOrder(const std::vector<std::string> &data);
-    void OnSortedOrder(const std::vector<std::string> &data);
+    Trader(int maxThreadNum, const std::string &locationPath, int minSize);
+    ~Trader();
+    void OnTrader(const std::vector<std::string> &data);
+    void OnSortedTrader(const std::vector<std::string> &data);
     struct SeqInfo
     {
         std::set<int> gap;
@@ -26,8 +26,8 @@ public:
         std::mutex mSortMutex;
     };
 private:
-    int OnOrderWorker(const std::vector<std::string> &data);
-    int OnSortedOrderWorker(std::shared_ptr<SeqInfo> pSeqInfo, int seqId, const std::vector<std::string> &data);
+    int OnTraderWorker(const std::vector<std::string> &data);
+    int OnSortedTraderWorker(std::shared_ptr<SeqInfo> pSeqInfo, int seqId, const std::vector<std::string> &data);
     void OutputList(std::list<std::vector<std::string>> &buffDataList);
 
     ThreadPoolPtr mpThreadPool;

@@ -1,18 +1,23 @@
 #include "firm_offer.h"
 #include <fstream>
 #include <sstream>
+#include <iostream>
 using namespace std;
 
-FirmOffer::FirmOffer(const std::string &path, std::shared_ptr<Order> pOrder)
-        :inputDataPath(path), mpOrder(pOrder)
+FirmOffer::FirmOffer(const std::string &orderPath, std::shared_ptr<Order> pOrder, 
+                     const string &traderPath, shared_ptr<Trader> pTrader)
+        :mOrderInputDataPath(orderPath), mpOrder(pOrder), mTraderInputDataPath(traderPath), mpTrader(pTrader)
 {
+    dataPathList.resize(2);
+    dataPathList[ORDER] = mOrderInputDataPath;
+    dataPathList[TRADER] = mTraderInputDataPath;
 
 }
 
-
-void FirmOffer::ConstructLocationData()
+void FirmOffer::ConstructLocationData(const int dataType)
 {
-    ifstream infile(inputDataPath);
+    cout << "DEBUG dataType: " << dataType << " " << dataPathList[dataType]<<endl;
+    ifstream infile(dataPathList[dataType]);
     string line;
     while (getline(infile, line)) {
         vector<string> data;
@@ -21,11 +26,20 @@ void FirmOffer::ConstructLocationData()
         while (getline(input, tmp, ',')) {
             data.push_back(tmp);
         }
-        OnOrder(data);
+        if (dataType == ORDER)
+            OnOrder(data);
+        else if (dataType == TRADER) {
+            OnTrader(data);
+        }
     }   
 }
 
 void FirmOffer::OnOrder(const vector<string> &data)
 {
     mpOrder->OnOrder(data);
+}
+
+void FirmOffer::OnTrader(const vector<string> &data)
+{
+    mpTrader->OnTrader(data);
 }
