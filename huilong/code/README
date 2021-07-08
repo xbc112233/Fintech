@@ -8,3 +8,5 @@ g++ -g thread_pool.cpp main.cpp Order.cpp Trader.cpp firm_offer.cpp  common_util
 ./t 20
 
 4.ORDER_SSE的本地固化数据为当前可执行文件目录下的ORDER_SSE.loc文件，TRADE_SSE的固化文件为TRADE_SSE.loc
+
+5.目前代码只做了第一和第二两个问题，第二个问题本身还有些疑问需要沟通，第三个问题的case没理解也需要沟通
