@@ -1,0 +1,18 @@
+1. 编译命令
+g++ -g order_statistic_tree.cpp main.cpp -std=c++11  -Werror -o t
+
+2. 测试用例说明
+测试文件名：data.list
+格式:
+test_cmd(包括insert，erase, rank, index):test_data, 其中insert命令的data可以配成任意分隔符的多个数据，剩下3个命令只能配单个数据
+end表示一组测试数据结束，顺序统计树reset, 整个测试文件结尾符为EOF
+
+example:
+insert:1,1,3,3,4,4,4,8,7
+rank:4
+rank:3
+index:3
+erase:3
+rank:4
+end
+
