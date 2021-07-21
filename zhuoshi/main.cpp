@@ -13,11 +13,9 @@ int main()
     t.insert(4);
     t.insert(4);
     t.insert(8);
-    //t.remove(8);
     t.insert(7);
-    //cout << t << endl;
-//    t.printsize(cout);
-    cout << "th\t:\t" << t.index(5) << endl;
-    cout << "\t:\t" << t.rank(8) << endl;
+    t.erase(3);
+    cout << "index res: " << t.index(5) << endl;
+    cout << "rank res: " <<t.rank(4).first << " " << t.rank(4).second << endl;
     return 0;
 }

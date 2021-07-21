@@ -20,13 +20,18 @@ void OrderStatisticTree::insert(int key)
 {
     Node* tr = root;
     Node* ti = nullptr;
+    m[key] += 1;
     while (tr) {
         ++(tr->size);
         ti = tr;
         if (tr->key < key)
             tr = tr->right;
-        else
+        else {
+            if (tr->key == key) {
+                tr->repeatNum++;
+            }
             tr = tr->left;
+        }
     }
     if (!ti)
         root = new Node(key, BLACK);
@@ -54,7 +59,7 @@ void OrderStatisticTree::clear()
      delete root;
 }
 
-void OrderStatisticTree::remove(int key)
+void OrderStatisticTree::erase(int key)
 {
     Node* r = getKey(key);
     int color;
@@ -172,16 +177,19 @@ int OrderStatisticTree::index(int i) const
         return index(root->right, i - s);
 }
 
-int OrderStatisticTree::rank(Node* root, int key, int sum) const {
+int OrderStatisticTree::rank(Node* root, int key, int sum, int &repeatNum) const {
     if (!root)
         return sum + 1;
     int l = (root->left ? root->left->size : 0) + 1;
-    if (root->key == key)
+    if (root->key == key) {
+        auto it = m.find(key);
+        repeatNum = it->second; 
         return l + sum;
+    }
     if (root->key < key)
-        return rank(root->right, key, sum + l);
+        return rank(root->right, key, sum + l, repeatNum);
     else
-        return rank(root->left, key, sum);
+        return rank(root->left, key, sum, repeatNum);
 }
 
 void OrderStatisticTree::leftR(Node* n)
@@ -230,7 +238,6 @@ void OrderStatisticTree::rightR(Node* n)
         n->left->p = n;
     l->right = n;
     n->p = l;
-    //�޸�sizeֵ��ά��
     l->size = n->size;
     n->size = (n->left ? n->left->size : 0) + (n->right ? n->right->size : 0) + 1;
 }
@@ -409,9 +416,17 @@ int OrderStatisticTree::index(Node* root, int i) const
         return index(root->right, i - s);
 }
 
-int OrderStatisticTree::rank(int key) const {
-    return rank(root, key);
+
+pair<int,int> OrderStatisticTree::rank(int key)
+{
+    int repeatNum = 0;
+    int sum = 0;
+    int upper = rank(root, key, sum, repeatNum);
+
+    int lower = upper - repeatNum + 1;
+    return make_pair<int,int>((int)lower, (int)upper);
 }
+
 OrderStatisticTree::~OrderStatisticTree()
 {
     clear();
