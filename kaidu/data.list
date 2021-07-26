@@ -1,0 +1,11 @@
+Init:4
+Put:a_0,b_1,c_2,d_3
+Get
+End
+
+Init:3
+Put:aa_0,c_4,dd_5,bb_2
+Get
+end
+
+EOF
