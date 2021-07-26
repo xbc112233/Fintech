@@ -33,6 +33,7 @@ void Buffer::Put(shared_ptr<DataInfo> pDataInfo)
     int seqId = pDataInfo->seqId;
     cout << "DEBUG put seqId: " << seqId << " mNextOutputSeqId: " << mNextOutputSeqId << endl;
     if (seqId < mNextOutputSeqId) {
+        UpdateOutputList();
         return;
     }
     else if (seqId == mNextOutputSeqId) {
@@ -47,15 +48,24 @@ void Buffer::Put(shared_ptr<DataInfo> pDataInfo)
 void Buffer::UpdateOutputList(shared_ptr<DataInfo> pDataInfo)
 {
     auto it = mDataBufferPtrList.begin();
-    while (it != mDataBufferPtrList.end() && (*it)->seqId <= mNextOutputSeqId) {
-        cout << "DEBUG UpdateOutputList push seqId: " << (*it)->seqId <<endl;
-        mDataOutputPtrList.push_back(*it);
-        ++it;
-        mDataBufferPtrList.pop_front();
+    cout << "DEBUG UpdateOutputList nextSeqId: " << pDataInfo->nextSeqId << " seqId: " << pDataInfo->seqId 
+        << " mNextOutputSeqId: " << mNextOutputSeqId <<endl;
+    while (it != mDataBufferPtrList.end()) {
+        if ((*it)->seqId <= mNextOutputSeqId) {
+            cout << "DEBUG UpdateOutputList push seqId: " << (*it)->seqId <<endl;
+            mDataOutputPtrList.push_back(*it);
+            ++it;
+            mDataBufferPtrList.pop_front();
+        }
+        else {
+            cout << "DEBUG UpdateOutputList seqId: " << (*it)->seqId << " mNextOutputSeqId: " << mNextOutputSeqId << endl;
+            ++it;
+        }
     }
 
     mDataOutputPtrList.push_back(pDataInfo);
     mNextOutputSeqId = pDataInfo->nextSeqId;
+    
     it = mDataBufferPtrList.begin();
     while (it != mDataBufferPtrList.end() && (*it)->seqId == mNextOutputSeqId) {
         mDataOutputPtrList.push_back(*it);
@@ -67,24 +77,46 @@ void Buffer::UpdateOutputList(shared_ptr<DataInfo> pDataInfo)
 
 void Buffer::UpdateOutputList()
 {
-    auto it = mDataBufferPtrList.begin();
-    while (it != mDataBufferPtrList.end() && (*it)->seqId == mNextOutputSeqId) {
-        mDataOutputPtrList.push_back(*it);
-        mNextOutputSeqId = (*it)->nextSeqId;
-        ++it;
-        mDataBufferPtrList.pop_front();
-    }
-
-    it = mDataOutputPtrList.begin();
+    auto it = mDataOutputPtrList.begin();
+    auto &l = mDataBufferPtrList;
+    int lastNextSeqId = l.size() > 0 ? l.back()->nextSeqId : -1; 
+    cout << "~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+    Print();
     while (it!= mDataOutputPtrList.end()) {
-        if ((*it)->seqId < mNextOutputSeqId) {
+        if ((*it)->nextSeqId <= lastNextSeqId - mMaxBufferSize ||
+            (*it)->nextSeqId <= (mDataOutputPtrList.back()->nextSeqId) - mMaxBufferSize) {
+            cout<< "DEBUG UpdateOutputList seqId < mNextOutputSeqId nextSeqId: " << (*it)->nextSeqId << " mNextOutputSeqId: " << mNextOutputSeqId << " last nextSeqId: "<< lastNextSeqId <<endl;
             ++it;
             mDataOutputPtrList.pop_front();
         }
         else {
+             cout<< "DEBUG UpdateOutputList not pop seqId < mNextOutputSeqId seqId: " << (*it)->seqId << " mNextOutputSeqId: " << mNextOutputSeqId  << " lastNextSeqId-mMaxBufferSize: "<<lastNextSeqId - mMaxBufferSize<<endl;
+
             break;
         }
     }
+    it = mDataBufferPtrList.begin();
+    auto itLast = mDataBufferPtrList.back();
+    while (it != mDataBufferPtrList.end()) {
+        if (itLast->nextSeqId - mMaxBufferSize >= (*it)->nextSeqId ||
+            (*it)->seqId == mNextOutputSeqId) {
+            mDataOutputPtrList.push_back(*it);
+            cout << "DEBUG UpdateOutputList buff it seqId: " << (*it)->seqId << 
+                " mNextOutputSeqId: " << mNextOutputSeqId 
+                << " nextSeqId: "<< (*it)->nextSeqId << endl;
+            mNextOutputSeqId = (*it)->nextSeqId;
+            ++it;
+            mDataBufferPtrList.pop_front();
+        }
+        else {
+            cout << "DEBUG UpdateOutputList not it seqId: " << (*it)->seqId <<
+                " mNextOutputSeqId: " << mNextOutputSeqId
+                << " nextSeqId: "<< (*it)->nextSeqId << endl;
+            ++it;
+        }
+    }
+
+    
 }
 
 void Buffer::Print()
@@ -113,12 +145,10 @@ void Buffer::UpdateBufferList(shared_ptr<DataInfo> pDataInfo)
         [](const shared_ptr<DataInfo> pDataInfo, int seqId) {
             return pDataInfo->nextSeqId <= seqId;
         });
-    cout <<"DEBUG lower_bound it: " << (*it)->seqId <<" input seId: " << pDataInfo->seqId << endl;
     l.insert(it, pDataInfo);
-
-    int lastSeqId = l.back()->nextSeqId;
+    Print();
+    int lastSeqId = max(l.back()->nextSeqId, pDataInfo->nextSeqId);
     if (lastSeqId - pDataInfo->seqId > mMaxBufferSize) {
-        cout << "DEBUG UpdateBufferList lastSeqId - pDataInfo->seqId > mMaxBufferSize seqId : " << pDataInfo->seqId << endl;
         mNextOutputSeqId = lastSeqId - mMaxBufferSize;
         return;
     }
@@ -133,7 +163,7 @@ void Buffer::UpdateBufferList(shared_ptr<DataInfo> pDataInfo)
             (*(mDataBufferPtrList.begin()))->seqId < mNextOutputSeqId) {
         mDataBufferPtrList.pop_front();
     }
-
     UpdateOutputList();
-    //mNextOutputSeqId = mNextOutputSeqId + 1;  
+    cout << "DEBUG after UpdateOutputList===============" <<endl;
+    Print();
 }
