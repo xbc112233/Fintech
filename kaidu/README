@@ -1,0 +1,22 @@
+1. 编译命令
+g++ -g tcp_buffer.cpp main.cpp -std=c++11  -Werror -o t
+
+2. 测试用例说明
+测试文件名：data.list
+格式:
+test_cmd(包括Get，Init, Put):test_data, 其中Put命令的data用逗号分隔多组需要Put的数据，其中每组数据用_分隔，左边为数据，右边为seqId
+Init命令只有一个数字，表示buffer的maxSize，丢包阈值
+end表示一组测试数据结束，buffer类指针reset, 整个测试文件结尾符为EOF
+
+example:
+Init:4
+Put:a_0,b_1,c_2,d_3
+Get
+End
+
+Init:22
+Put:aa_0,cc_4,dd_6,bb_2
+Get
+end
+
+EOF
